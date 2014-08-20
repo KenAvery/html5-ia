@@ -1,26 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Super HTML5 Editor</title>
 <link rel="stylesheet" href="style.css">
-<script src="app.js" type="text/javascript"></script>
+<script src="app.js"></script>
 </head>
+<!-- The value of class will determine the current display view. -->
+<!-- Navigation between views will be implemented later in the section -->
 <body class="browser-view">
 	<header>
 		<h1>Super HTML5 Editor</h1>
 	</header>
+	<!-- The file Browser view markup should be inserted here. -->
 	<section id="list">
 		<h1>File Browser</h1>
+		<!-- This zone will be a target drop zone for files later in this chapter. The open -->
+		<!-- attribute on the <details> element sets it to be expanded by default -->
 		<details open id="filedrop">
+			<!-- The create form allows users to create a new empty file. -->
 			<summary>Create File</summary>
-			<form name="create" action="">
+			<form name="create">
 				<div>
 					<h2>Create an empty file</h2>
-					<input type="file" name="files" multiple accept="text/html">
-					<input type="submit" value="Import">
+					<input type="text" name="name" placeholder=" e.g. index.html">
+					<input type="submit" value="Create">
 				</div>
 			</form>
+			<div class="spacer">OR</div>
+			<!-- The import form allows users to import files from their computer -->
+			<form name="import">
+				<div>
+					<h2>Import existing file(s)</h2>
+					<input type="file" name="files" multiple accept="text/html">
+					<input type="submit" value="import">
+				</div>
+			</form>
+
 			<div class="note">
 				<strong>Note</strong>: You can drag files from your computer and
 				drop them anywhere in this box to import them into the application.
@@ -32,20 +48,23 @@
 			<div class="note top">
 				You currently have <span id="file_count">0</span> files(s):
 			</div>
-			<ul id="files">
-			</ul>
+			<!-- This will be populated later with a list of files -->
+			<ul id="files"></ul>
 			<div class="note">
 				<strong>Note</strong>: You can drag any of the files in the list
 				above to your computer to export them from the application.
 			</div>
 		</details>
 	</section>
+
+	<!-- The File Editor view markup should be inserted here. -->
 	<section id="editor">
 		<h1>
 			Editing <span id="file_name"></span><a href="#list">Back to File
 				Browser</a>
 		</h1>
 		<div class="mode-toolbar">
+			<!-- Two buttons allow the user to switch between Visual and HTML edit modes -->
 			<div class="left">
 				<div>Edit Mode:</div>
 				<button id="edit_visual" class="split_left active">Visual</button>
@@ -56,10 +75,13 @@
 				<button id="file_preview">Save &amp; Preview</button>
 			</div>
 		</div>
+
 		<details open>
 			<summary>File Contents</summary>
 			<div id="file_contents">
 				<div id="file_contents_visual">
+					<!-- Contains several buttons that allow the user to format the -->
+					<!-- currently selected content in the editor window -->
 					<div id="file_contents_visual_toolbar">
 						<button data-command="bold">
 							<strong>B</strong>
@@ -82,6 +104,7 @@
 					<iframe id="file_contents_visual_editor"></iframe>
 				</div>
 				<div id="file_contents_html">
+					<!-- The HTML markup editor is a regular <textarea> element -->
 					<textarea id="file_contents_html_editor"></textarea>
 				</div>
 			</div>

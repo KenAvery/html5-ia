@@ -1,8 +1,5 @@
 (function() {
-    // This constructor function is where the rest of the app's code should be inserted
     var SuperEditor = function() {
-        // These variables will store the current view and filename (if in the File Editor
-        // view) and a marker to indicate if the document has been modified (isDirty)
         var view;
         var fileName;
         var isDirty = false;
@@ -22,15 +19,10 @@
                 return unsavedMsg;
             }
         };
-        // If the user tries to close the window or navigate to another page, you'll check
-        // to see if they've made unsaved changes and warn them first if necessary.
         window.addEventListener('beforeunload', checkDirty, false);
 
-        // The jump event handler uses hashes in the URL to switch between the two views
         var jump = function(e) {
             var hash = location.hash;
-            // If the URL hash contains a forward slash, it should show the File
-            // Editor view for the file after the slash (if it exists).
             if (hash.indexOf('/') > -1) {
                 var parts = hash.split('/'), fileNameEl = document.getElementById('file_name');
                 view = parts[0].substring(1) + '-view';
@@ -47,12 +39,9 @@
                     location.href = e.oldURL;
                 }
             }
-            // Use the class attribute on the <body> element to indicate which is the
-            // current view - the CSS will take care of showing/hiding the views as necessary.
             document.body.className = view;
         };
         jump();
-        // The jump function is called on page load and whenever the URL hash changes.
         window.addEventListener('hashchange', jump, false);
 
         var editVisualButton = document.getElementById('edit_visual');
@@ -63,29 +52,20 @@
         var htmlView = document.getElementById('file_contents_html');
         var htmlEditor = document.getElementById('file_contents_html_editor');
 
-        // Enable editing of the visual editor iframe by switching on its designMode property.
         visualEditorDoc.designMode = 'on';
 
-        // Mark the file as dirty whenever the user makes changed to the either editor
         visualEditorDoc.addEventListener('keyup', markDirty, false);
         htmlEditor.addEventListener('keyup', markDirty, false);
 
-        // This function updated the visual editor content, Every execution of updateVisualEditor
-        // constructs a new document, so you must attach a new keyup event listener.
         var updateVisualEditor = function(content) {
             visualEditorDoc.open();
             visualEditorDoc.write(content);
             visualEditorDoc.close();
             visualEditorDoc.addEventListener('keyup', markDirty, false);
         };
-
-        // This function updates the HTML editor contents
         var updateHtmlEditor = function(content) {
             htmlEditor.value = content;
         };
-
-        // This event handler toggles between the visual and HTML editors, XMLSerializer
-        // object is used to retrieve the HTML content of the iframe element
         var toggleActiveView = function() {
             if (htmlView.style.display == 'block') {
                 editVisualButton.className = 'split_left active';
@@ -108,15 +88,10 @@
         editHtmlButton.addEventListener('click', toggleActiveView, false);
 
         var visualEditorToolbar = document.getElementById('file_contents_visual_toolbar');
-
-        // RichTextAction is the event handler for all buttons on the visual editor toolbar. When a user
-        // clicks a toobar button, the event handler determines which button the user clicked.
         var richTextAction = function(e) {
             var command;
             var node = (e.target.nodeName === "BUTTON") ? e.target : e.target.parentNode;
 
-            // The dataset object offers convenient access to the HTML5 data-* attributes
-            // If the browser doesn't support this, the app falls back to the getAttribute method.
             if (node.dataset) {
                 command = node.dataset.command;
             } else {
@@ -132,16 +107,11 @@
             } else if (command === 'insertImage') {
                 doPopupCommand(command, 'Enter image URL:', 'http://www.example.com/image.png');
             } else if (command === 'insertMap') {
-                // Check to see if the user's browser supports geolocation
                 if (navigator.geolocation) {
                     node.innerHTML = 'Loading';
-                    // The getCurrentPosition method will trigger the browser to ask the user for access to the user's location.
-                    // If permission is granted, getCurrentPosition executes a callback function, passing the user's location
-                    // in the form of a Position object.
                     navigator.geolocation.getCurrentPosition(function(pos) {
                         var coords = pos.coords.latitude + ',' + pos.coords.longitude;
                         var img = 'http://maps.googleapis.com/maps/api/staticmap?markers=' + coords + '&zoom=11&size=200x200&sensor=false';
-                        // Use execCommand to insert a static Google Maps Image of the user's location.
                         visualEditorDoc.execCommand('insertImage', false, img);
                         node.innerHTML = 'Location Map';
                     });
@@ -153,10 +123,6 @@
             }
         };
         visualEditorToolbar.addEventListener('click', richTextAction, false);
-
-        // Because this app will require a customized UI, showUI will be set to false. The third argument, value,
-        // is passed a prompt method (of the window object). It contains a string prompting the user for and input
-        // value and another string containing a default input value.
 
         // For convenience, point the filesystem objects to possible vendor prefixes.
         // If the browser doesn't support these objects, the objects will have a false value.
@@ -203,18 +169,18 @@
             // If queryUsageAndQuota successfully executes, it passes usage and quota info to the callback function,
             // checkQuota; otherwise, qmError is called. CheckQuota determines if sufficient quota exists to store
             // files; if not, then it needs to request a larger quota.
-            storageInfo.queryUsageAndQuota(checkQuota, qmError);
+            storageInfo.queryUsageAndQuota(stType, checkQuota, qmError);
 
             var getFS = function(quota) {
                 // This requestFileSystem method is used to get the filesystem object.
-                requestFileSystem(stType, quota, displayFileSystem, fsError);
+                requestFileSystem(stType, quota, displayFileSystem, isError);
             };
 
             var displayFileSystem = function(fs) {
                 fileSystem = fs;
                 // You'll implement updateBrowserFileList and displayBrowserFileList in a later section.
                 // These functions will retrieve and display files in the app's filesystem.
-                updateBrowserFilesList();
+                updateBrowserFileList();
 
                 if (view === 'editor') {
                     // You'll implement loadFile in a later section. If the editor
@@ -224,48 +190,6 @@
             };
 
             var displayBrowserFileList = function(files) {
-                fileListEl.innerHTML = '';
-                // Update the file counter with the number of files in the filesystem
-                document.getElementById('file_count').innerHTML = files.length;
-
-                if (files.length > 0) {
-                    // Iterate over each file in the filesystem using the forEach array function
-                    files.forEach(function(file, i) {
-                        // Draggable will be discussed in a later section on drag-and-drop interactivity
-                        var li = '<li id="li_' + i + '" draggable="true">' + file.name + '<div><button id="view_' + i + '">View</button>' + '<button class="green" id="edit_' + i + '">Edit</button>' + '<button class="red" id="del_' + i + '">Delete</button>' + '</div></li>';
-                        fileListEl.insertAdjacentHTML('beforeend', li);
-
-                        var listItem = document.getElementById('li_' + i);
-                        var viewBtn = document.getElementById('view_' + i);
-                        var editBtn = document.getElementById('edit_' + i);
-                        var deleteBtn = document.getElementById('del_' + i);
-
-                        var doDrag = function(e) {
-                            dragFile(file, e);
-                        };
-                        var doView = function() {
-                            viewFile(file);
-                        };
-                        var doEdit = function() {
-                            editFile(file);
-                        };
-                        var doDelete = function() {
-                            deleteFile(file);
-                        };
-
-                        // Attach handlers to the View, Edit and Delete buttons and the list item itself
-                        viewBtn.addEventListener('click', doView, false);
-                        editBtn.addEventListener('click', doEdit, false);
-                        deleteBtn.addEventListener('click', doDelete, false);
-                        listItem.addEventListener('dragstart', doDrag, false);
-                    });
-                } else {
-                    // If there are no files, show an empty list message.
-                    fileListEl.innerHTML = '<li class="empty">No files to display</li>';
-                }
-            };
-
-            var updateBrowserFilesList = function(files) {
                 fileListEl.innerHTML = '';
                 // Update the file counter with the number of files in the filesystem
                 document.getElementById('file_count').innerHTML = files.length;
@@ -341,25 +265,25 @@
             // If a FileEntry is found, getFile passes the selected FileEntry to the fileEntry argument
             // of the success callback function. See table 3.1 for a list of possible options arguments
             // and their effect on getFile behavior.
-            var loadFile = function(name) {
-                fileSystem.root.getFile(name, {}, function(fileEntry) {
-                    currentFile = fileEntry;
-                    // This file method of the File System API is used to retrieve the file
-                    // from the fileEntry and pass the file to the callback function.
-                    fileEntry.file(function(file) {
-                        var reader = new FileReader();
-                        reader.onloadend = function(e) {
-                            updateVisualEditor(this.result);
-                            updateHtmlEditor(this.result);
-                        };
-                        // With a new FileReader created and its onloadend event defined, call
-                        // readAsText to read the file and load it into reader's results attribute.
-                        reader.readAsText(file);
-                    }, fsError);
-                }, fsError);
+            var loadFile = function (name) {
+              fileSystem.root.getFile (name, {}, function (fileEntry) {
+                 currentFile = fileEntry;
+                 // This file method of the File System API is used to retrieve the file
+                 // from the fileEntry and pass the file to the callback function.
+                 fileEntry.file (function (file) {
+                    var reader = new FileReader();
+                    reader.onloadend = function (e) {
+                      updateVisualEditor (this.result);
+                      updateHtmlEditor (this.result);
+                    };
+                    // With a new FileReader created and its onloadend event defined, call
+                    // readAsText to read the file and load it into reader's results attribute.
+                    reader.readAsText (file);
+                 }, fsError);
+              }, fsError);
             };
 
-            var viewFile = function(file) {
+            var viewFile = function (file) {
                 // The toURL method makes it a breeze to view the contents of a file,
                 // because you can simply launch it in a new browser window.
                 window.open(file.toURL(), 'SuperEditorPreview', 'width=800, height=600');
@@ -367,126 +291,26 @@
 
             // To edit the file, you load the file into the visual and HTML editors
             // and make the File Editor view active by changing the URL hash.
-            var editFile = function(file) {
-                loadFile(file.name);
+            var editFile = function (file) {
+                loadFile (file.name);
                 location.href = '#editor/' + file.name;
             };
 
-            var deleteFile = function(file) {
-                var deleteSuccess = function() {
-                    alert('File ' + file.name + 'deleted successfully', 'File deleted');
-                    updateBrowserFilesList();
-                };
+            var deleteFile = function (file) {
+              var deleteSuccess = function () {
+               alert ('File ' + file.name + 'deleted successfully', 'File deleted');
+               updateBrowserFilesList ();
+              };
 
-                if (confirm('File will be deleted. Are you sure?', 'Confirm delete')) {
-                    // When the remove function has completed, it will execute the deleteSuccess callback function,
-                    // which calls the updateBrowserFileList function to ensure the listing is updated.
-                    file.remove(deleteSucess, fsError);
-                }
+              if (confirm ('File will be deleted. Are you sure?', 'Confirm delete')) {
+                  // When the remove function has completed, it will execute the deleteSuccess callback function,
+                  // which calls the updateBrowserFileList function to ensure the listing is updated.
+                  file.remove (deleteSucess, fsError);
+              }
             };
-
-            var createFile = function(field) {
-                // The config object is passed to the getFile method, telling getFile to create
-                // a FileEntry, but only if a FileEntry with that name doesn't exist.
-                var config = {
-                    create : true,
-                    exclusive : true
-                };
-
-                var createSuccess = function(file) {
-                    alert('File ' + file.name + ' created successfully', 'File created');
-                    updateBrowserFilesList();
-                    field.value = '';
-                };
-
-                fileSystem.root.getFile(field.value, config, createSuccess, fsError);
-            };
-
-            var createFormSubmit = function(e) {
-                e.preventDefault();
-                var name = document.forms.create.name;
-
-                if (name.value.length > 0) {
-                    var len = name.value.length;
-
-                    if (name.value.substring(len - 5, len) === '.html') {
-                        createFile(name);
-                    } else {
-                        alert('Only extension .html allowed', 'Create Error');
-                    }
-                } else {
-                    alert('You must enter a file name', 'Create Error');
-                }
-            };
-
-            document.forms.create.addEventListener('submit', createFormSubmit, false);
         } else {
             alert('File System API not supported', 'Unsupported');
         }
-
-        var importFiles = function(files) {
-            var count = 0;
-            var validCount = 0;
-
-            // If all of the files have been checked, show how many were
-            // imported and how many failed and update the file list.
-            var checkCount = function() {
-                count++;
-
-                if (count === files.length) {
-                    var errorCount = count - validCount;
-                    alert(validCount + ' file(s) imported' + errorCount + 'error(s) encountered.', 'Import complete');
-                    updateBrowserFilesList();
-                }
-            };
-
-            // Loop through the files the user has selected and attempt to create them in the app's filesystem.
-            for (var i = 0, len = files.length; i < len; i++) {
-                var file = files[i];
-
-                // Because this for loop may execute a callback function that uses a file object, f, defined by the loop,
-                // and because an iteration of the loop may finish before the callback has fired, a closure was implemented
-                // to preserve the file object state.
-                (function(f) {
-                    var config = {
-                        create : true,
-                        exclusive : true
-                    };
-
-                    if (f.type == 'text/html') {
-                        fileSystem.root.getFile(f.name, config, function(theFileEntry) {
-                            theFileEntry.createWriter(function(fw) {
-                                fw.write(f);
-                                validCount++;
-                                checkCount();
-                            }, function(e) {
-                                checkCount();
-                            });
-                        }, function(e) {
-                            checkCount();
-                        });
-                    } else {
-                        checkCount();
-                    }
-                })(file);
-            }
-
-        };
-
-        var importFormSubmit = function(e) {
-            e.preventDefault();
-
-            // Read the files from the file's <import> element and call the
-            // importFiles function if at least one file has been selected.
-            var files = document.forms.import.files.files;
-
-            if (files.length > 0) {
-                importFiles(files);
-            } else {
-                alert('No file(s) selected', 'Import Error');
-            }
-        };
-        document.forms.import.addEventListener('submit', importFormSubmit, false);
 
     };
 
