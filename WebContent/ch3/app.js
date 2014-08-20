@@ -374,14 +374,14 @@
 
             var deleteFile = function(file) {
                 var deleteSuccess = function() {
-                    alert('File ' + file.name + 'deleted successfully', 'File deleted');
+                    alert('File ' + file.name + ' deleted successfully', 'File deleted');
                     updateBrowserFilesList();
                 };
 
                 if (confirm('File will be deleted. Are you sure?', 'Confirm delete')) {
                     // When the remove function has completed, it will execute the deleteSuccess callback function,
                     // which calls the updateBrowserFileList function to ensure the listing is updated.
-                    file.remove(deleteSucess, fsError);
+                    file.remove(deleteSuccess, fsError);
                 }
             };
 
