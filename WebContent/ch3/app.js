@@ -488,109 +488,118 @@
         };
         document.forms.import.addEventListener('submit', importFormSubmit, false);
 
-        var saveFile = function (callback) {
-          // Check if the currently displayed view is the visual or HTML editor
-          var currentView = function () {
-            if (htmlView.style.display === 'block') {
-                return 'html';
-            }  else {
-                return 'editor';
+        var saveFile = function(callback) {
+            // Check if the currently displayed view is the visual or HTML editor
+            var currentView = function() {
+                if (htmlView.style.display === 'block') {
+                    return 'html';
+                } else {
+                    return 'editor';
+                }
+            };
+
+            var content;
+
+            // Get the contents of the relevant editor
+            if (currentView() === 'editor') {
+                var x = new XMLSerializer();
+
+                content = x.serializeToString(visualEditorDoc);
+            } else {
+                content = htmlEditor.value;
             }
-          };
 
-          var content;
+            currentFile.createWriter(function(fw) {
+                // When the file writer, fw, finishes resetting the file's length to zero, fw
+                // triggers the onwriteend event handler. This event handler redefines fw's
+                // onwriteend event handler and then saves the file by calling write
+                fw.onwriteend = function(e) {
+                    // When file writer, fw, has finished writing the currentfile, fw triggers
+                    // the event handler for onwriteend. Callback refers to the callback
+                    // function passed to the saveFile function.
+                    fw.onwriteend = function(e) {
+                        if ( typeof callback === 'function') {
+                            callback(currentFile);
+                        } else {
+                            alert('File saved successfully', 'File saved');
+                        }
+                        isDirty = false;
+                    };
 
-          // Get the contents of the relevant editor
-          if (currentView() === 'editor') {
-              var x = new XMLSerializer ();
+                    // Use a Blob to construct a blob object from content,
+                    // a string-based representation of the editor's content.
+                    var blob = new Blob([content], {
+                        text : 'text/html',
+                        endings : 'native'
+                    });
 
-              content = x.serializeToString (visualEditorDoc);
-          }  else {
-              content = htmlEditor.value;
-          }
+                    // Use the endings parameter to specify what type of end-of-line marker should be used.
+                    // A value of native instructs a Blob constructor to use an end-of-line marker
+                    // native to the browser's underlying OS.
+                    fw.write(blob);
+                };
 
-          currentFile.createWriter (function (fw) {
-              // When the file writer, fw, finishes resetting the file's length to zero, fw
-              // triggers the onwriteend event handler. This event handler redefines fw's
-              // onwriteend event handler and then saves the file by calling write
-             fw.onwriteend = function (e) {
-                 // When file writer, fw, has finished writing the currentfile, fw triggers
-                 // the event handler for onwriteend. Callback refers to the callback
-                 // function passed to the saveFile function.
-               fw.onwriteend = function (e) {
-                   if (typeof callback === 'function') {
-                       callback (currentFile);
-                   } else {
-                       alert ('File saved successfully', 'File saved');
-                   }
-                   isDirty = false;
-               };
+                fw.onerror = fsError;
 
-               // Use a Blob to construct a blob object from content,
-               // a string-based representation of the editor's content.
-               var blob = new Blob ([content], {text: 'text/html', endings: 'native'});
-
-               // Use the endings parameter to specify what type of end-of-line marker should be used.
-               // A value of native instructs a Blob constructor to use an end-of-line marker
-               // native to the browser's underlying OS.
-               fw.write (blob);
-             };
-
-             fw.onerror = fsError;
-
-             // Before saving data with file writer, fw, use truncate (0) to ensure its length attribute is
-             // is set to zero. Otherwise, when the application saves a file that's shorter than its
-             // previous version, the length attribute will be unchanged. As a result, you'd see old
-             // text filling in the gap between the new shorter file and its previous longer version.
-             fw.truncate (0);
-          }, fsError);
+                // Before saving data with file writer, fw, use truncate (0) to ensure its length attribute is
+                // is set to zero. Otherwise, when the application saves a file that's shorter than its
+                // previous version, the length attribute will be unchanged. As a result, you'd see old
+                // text filling in the gap between the new shorter file and its previous longer version.
+                fw.truncate(0);
+            }, fsError);
         };
 
-        var previewFile = function () {
+        var previewFile = function() {
             // SaveFile has been passed a callback function, viewFile. It's called when
             // saveFile has finished writing the editor contents to currentFile.
-          saveFile (viewFile);
+            saveFile(viewFile);
         };
 
-        var saveBtn = document.getElementById ('file_save');
-        var previewBtn = document.getElementById ('file_preview');
+        var saveBtn = document.getElementById('file_save');
+        var previewBtn = document.getElementById('file_preview');
 
-        saveBtn.addEventListener ('click', saveFile, false);
-        previewBtn.addEventListener ('click', previewFile, false);
+        saveBtn.addEventListener('click', saveFile, false);
+        previewBtn.addEventListener('click', previewFile, false);
 
         // Designate the drop zone for files as the element with the ID filedrop.
-        var fileDropZone = document.getElementById ('filedrop');
+        var fileDropZone = document.getElementById('filedrop');
 
         // When files are dropped into the browser window, the default browser behavior is to load the files and
         // navigate away from the app, so you need to cancel this default behavior. First, invoke stopPropagation
         // to prevent the drop event from bubbling up to any ancestor elements of fileDropZone. Second, invoke
         // perventDefault to stop the browser from calling the default event handler attached to fileDropZone.
-        var importByDrop = function (e) {
-            e.stopPropagation ();
-            e.preventDefault ();
+        var importByDrop = function(e) {
+            e.stopPropagation();
+            e.preventDefault();
 
             // If the user is dragging files, these will reside in the dataTransfer object. To load them
             // into the app, pass them to the importFiles function (define in listing 3.15).
             var files = e.dataTransfer.files;
 
             if (files.length > 0) {
-                importFiles (files);
+                importFiles(files);
             }
         };
 
-        var importDragOver = function (e) {
-          e.preventDefault ();
-          // because you want the import file(s) to be copied when they're dropped into the zone, set the dragover
-          // event properties, effectAllowed and dropEffect, to copy. When the user drags the file over the drop
-          // zone, the file image(s) will change to indicate a pending copy operation.
-          e.dataTransfer.effectAllowed = 'copy';
+        var importDragOver = function(e) {
+            e.preventDefault();
+            // because you want the import file(s) to be copied when they're dropped into the zone, set the dragover
+            // event properties, effectAllowed and dropEffect, to copy. When the user drags the file over the drop
+            // zone, the file image(s) will change to indicate a pending copy operation.
+            e.dataTransfer.effectAllowed = 'copy';
 
-          e.dataTransfer.dropEffect = 'copy';
-          return false;
+            e.dataTransfer.dropEffect = 'copy';
+            return false;
         };
 
-        fileDropZone.addEventListener ('drop', importByDrop, false);
-        fileDropZone.addEventListener ('dragover', importDragOver, false);
+        fileDropZone.addEventListener('drop', importByDrop, false);
+        fileDropZone.addEventListener('dragover', importDragOver, false);
+
+        var dragFile = function(file, e) {
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.dropEffect = 'copy';
+            e.dataTransfer.setData('DownloadURL', 'application/octet-stream' + file.name + ':' + file.toURL());
+        };
 
     };
 
