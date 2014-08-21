@@ -558,6 +558,40 @@
         saveBtn.addEventListener ('click', saveFile, false);
         previewBtn.addEventListener ('click', previewFile, false);
 
+        // Designate the drop zone for files as the element with the ID filedrop.
+        var fileDropZone = document.getElementById ('filedrop');
+
+        // When files are dropped into the browser window, the default browser behavior is to load the files and
+        // navigate away from the app, so you need to cancel this default behavior. First, invoke stopPropagation
+        // to prevent the drop event from bubbling up to any ancestor elements of fileDropZone. Second, invoke
+        // perventDefault to stop the browser from calling the default event handler attached to fileDropZone.
+        var importByDrop = function (e) {
+            e.stopPropagation ();
+            e.preventDefault ();
+
+            // If the user is dragging files, these will reside in the dataTransfer object. To load them
+            // into the app, pass them to the importFiles function (define in listing 3.15).
+            var files = e.dataTransfer.files;
+
+            if (files.length > 0) {
+                importFiles (files);
+            }
+        };
+
+        var importDragOver = function (e) {
+          e.preventDefault ();
+          // because you want the import file(s) to be copied when they're dropped into the zone, set the dragover
+          // event properties, effectAllowed and dropEffect, to copy. When the user drags the file over the drop
+          // zone, the file image(s) will change to indicate a pending copy operation.
+          e.dataTransfer.effectAllowed = 'copy';
+
+          e.dataTransfer.dropEffect = 'copy';
+          return false;
+        };
+
+        fileDropZone.addEventListener ('drop', importByDrop, false);
+        fileDropZone.addEventListener ('dragover', importDragOver, false);
+
     };
 
     var init = function() {
