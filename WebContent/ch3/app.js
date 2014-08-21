@@ -174,7 +174,7 @@
         // Standard error function for all File System API method calls.
         var fsError = function(e) {
             if (e.code === 9) {
-                alert('File name already exists', 'File System Error');
+                alert('File name already exists.', 'File System Error');
             } else {
                 alert('An unexpected error occured. Error code: ' + e.code);
             }
@@ -195,7 +195,7 @@
                 if (quota === 0) {
                     // Because this app has a persistent filesystem, the request for quota will trigger
                     // a message asking the user's permission to access the browser's filesystem
-                    storageInfo.requestQuota(stType, stSize, getFS, qmError);
+                    storageInfo.requestQuota(stSize, getFS, qmError);
                 } else {
                     getFS(quota);
                 }
@@ -598,7 +598,7 @@
         var dragFile = function(file, e) {
             e.dataTransfer.effectAllowed = 'copy';
             e.dataTransfer.dropEffect = 'copy';
-            e.dataTransfer.setData('DownloadURL', 'application/octet-stream' + file.name + ':' + file.toURL());
+            e.dataTransfer.setData('DownloadURL', 'application/octet-stream:' + file.name + ':' + file.toURL());
         };
 
     };
