@@ -1,5 +1,5 @@
 <?php
-$user = "";
+$user = "root";
 $pass = "";
-$db = ""; //Something like "mysql:host=localhost;dbname=ssechat"
+$db = "mysql:host=localhost;dbname=ssechat"; //Something like "mysql:host=localhost;dbname=ssechat"
 ?>
